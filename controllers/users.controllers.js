@@ -1,6 +1,8 @@
 const users = require("../users.json");
 const fs = require("fs");
 const path = require("path");
+
+//get all user data
 module.exports.getAllUsers = (req, res) => {
   const limit = req.query.limit;
   if (limit) {
@@ -24,6 +26,7 @@ module.exports.getAllUsers = (req, res) => {
   res.send(users);
 };
 
+//adds a new user
 module.exports.saveUser = (req, res) => {
   const newUser = req.body;
   if (
@@ -69,14 +72,14 @@ module.exports.saveUser = (req, res) => {
     }
   }
 };
-
+// get a random user
 module.exports.getRandomUser = (req, res) => {
   const numberOfuser = users.length;
   const randomNumber = Math.floor(Math.random() * numberOfuser) + 1;
   const randomUser = users.find((user) => user._id === randomNumber);
   res.send(randomUser);
 };
-
+//update single user data
 module.exports.updateSingleUser = (req, res) => {
   const userId = req.query.id;
   const userData = JSON.parse(
@@ -94,5 +97,25 @@ module.exports.updateSingleUser = (req, res) => {
   } else {
     // If the user doesn't exist, return a 404 error
     res.status(404).send("User not found");
+  }
+};
+//delete single user data
+module.exports.deleteSingleUser = (req, res) => {
+  const userId = req.query.id;
+  const exist = users.find((user) => user._id === Number(userId));
+  if (exist) {
+    const userData = JSON.parse(
+      fs.readFileSync(path.join(__dirname, "../users.json"))
+    );
+    // Find the user with the specified id
+    const userIndex = userData.findIndex((user) => user.id === Number(userId));
+    userData.splice(userIndex, 1);
+    fs.writeFileSync(
+      path.join(__dirname, "../users.json"),
+      JSON.stringify(userData)
+    ); // Update the file with the updated user data
+    res.status(200).send("User deleted successfully");
+  } else {
+    res.send("User don't exist");
   }
 };
