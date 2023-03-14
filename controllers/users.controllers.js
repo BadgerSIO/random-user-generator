@@ -44,7 +44,6 @@ module.exports.saveUser = (req, res) => {
       return res.status(400).send("User already exists");
     }
     preusers.push(newUser);
-    console.log(preusers);
     const updatedUsersData = JSON.stringify(preusers, null, 2);
     fs.writeFile(
       path.join(__dirname, "../users.json"),
@@ -99,6 +98,49 @@ module.exports.updateSingleUser = (req, res) => {
     res.status(404).send("User not found");
   }
 };
+
+//update multiple user
+module.exports.bulkUpdateUsers = (req, res) => {
+  const userIds = req.body.userIds; // Extract the user ids from the request body
+
+  if (!userIds || !Array.isArray(userIds)) {
+    // Validate the request body
+    res.status(400).send("Invalid request body");
+    return;
+  }
+
+  // Read the user data from the file
+  const userData = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "../users.json"))
+  );
+  let exist = true;
+
+  // Update the information for each user with a matching id
+  userIds.forEach((userId) => {
+    const updateData = req.body[userId]; // Extract the data to update from the request body
+
+    // Find the user with the specified id
+    const userIndex = userData.findIndex((user) => user._id === Number(userId));
+    console.log(userIndex);
+
+    if (userIndex !== -1) {
+      // If the user exists, update their information
+      userData[userIndex] = { ...userData[userIndex], ...updateData };
+    } else {
+      return (exist = false);
+    }
+  });
+  if (exist) {
+    fs.writeFileSync(
+      path.join(__dirname, "../users.json"),
+      JSON.stringify(userData)
+    ); // Update the file with the updated user data
+    return res.status(200).send("Users updated successfully");
+  } else {
+    return res.status(401).send("User not found");
+  }
+};
+
 //delete single user data
 module.exports.deleteSingleUser = (req, res) => {
   const userId = req.query.id;
