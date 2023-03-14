@@ -137,7 +137,7 @@ module.exports.bulkUpdateUsers = (req, res) => {
     ); // Update the file with the updated user data
     return res.status(200).send("Users updated successfully");
   } else {
-    return res.status(401).send("User not found");
+    return res.status(404).send("User not found");
   }
 };
 
